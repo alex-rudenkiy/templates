@@ -1,0 +1,26 @@
+# Default values for Custom Component.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+builder:
+  image:
+    registry: dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev
+    name: buildah
+    tag: v1.9.0-patched1
+  runtimeImage:
+    registry: dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev
+    name: wws
+    tag: 0.0.1
+
+runner:
+  image:
+    registry: dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev
+    name: onbuild-customscript-image
+    tag: v0.0.1
+
+app:
+  language: js-runtime
+  code: |
+    function () => {};
+    console.log('')
+  externalport: 8080

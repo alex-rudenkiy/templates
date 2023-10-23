@@ -1,0 +1,37 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: snps-domain
+  namespace: default  
+  description: A collection of all Synapse Entities
+  annotations:
+    permissions.backstage.io/public-readable: 'true'
+spec:
+  owner: user:guest
+  targets:
+    - ./acme/org.yaml
+    - ./domains/synapse-platform.yaml
+    - ./systems/symple.yaml
+    - ./templates/contact-l3-support-template.yaml
+    - ./templates/ingress-template.yaml
+    - ./templates/egress-template.yaml
+    - ./templates/ingress-egress-template.yaml
+    - ./templates/ingress-service-egress-template.yaml
+    - ./templates/http-to-exchange-adapter-template.yaml
+    - ./templates/grpc-rest-adapter-template.yaml
+    - ./templates/grpc-kafka-adapter-template.yaml
+    - ./templates/mq-http-adapter-template.yaml
+    - ./templates/ingress-service-mq-template.yaml
+    - ./templates/ingress-http-mq-template.yaml
+    - ./templates/mq-service-mq-template.yaml
+    - ./templates/dataspace-template.yaml
+    - ./templates/unimapper-template.yaml
+    - ./templates/converter-template.yaml
+    - ./api-mgmt/create-api/backstage-template.yaml
+    - ./api-mgmt/add-client/backstage-template.yaml
+    - ./api-mgmt/remove-client/backstage-template.yaml
+    - ./api-mgmt/replace-client/backstage-template.yaml
+    - ./templates/proxy-template.yaml
+    - ./templates/api-clarity-template.yaml
+    - ./templates/generate-template.yaml
+    - ./templates/custom-script-template.yaml

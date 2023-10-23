@@ -1,0 +1,126 @@
+{
+  "commonPodAnnotations": {
+    "openshift.io/scc": "restricted"
+  },
+  "customScriptImages": {
+    "builder": {
+       "registry": dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev,
+       "name": buildah,
+       "tag": v1.9.0-patched1
+    },
+    "runner": {
+      "registry": dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev,
+      "name": onbuild-customscript-image,
+      "tag": v0.0.1
+    },
+    "runtimeImage": {
+      "registry": dzo.sw.sbc.space/sbt_dev/ci90000193_synprod_dev,
+      "name": wws,
+      "tag": 0.0.1
+    }
+  },
+  "converter": {
+    "converterImage": "to_do"
+  },
+  "grpc_kafka_adapter": {
+    "adapterImage": "example.registry/grpc-kafka-adapter:v1"
+  },
+  "grpc_rest_adapter": {
+    "adapterEndpointStubImage": "example.registry/scm-stub:v1",
+    "adapterImage": "example.registry/grpc-rest-adapter:v1",
+    "adapterStubImage": "example.registry/grpc-rest-adapter-stub:v1"
+  },
+  "http_to_exchange_adapter": {
+    "image": "example.registry/http-to-exchange-adapter:v1"
+  },
+  "istioProxy": {
+    "defaultCerts": {
+      "dev-gen.delta.sbrf.ru": {
+        "caCert": "RVhBTVBMRQ==",
+        "certsCrt": "RVhBTVBMRQ==",
+        "certsKey": "RVhBTVBMRQ=="
+      },
+      "dev-gen.sigma.sbrf.ru": {
+        "caCert": "RVhBTVBMRQ==",
+        "certsCrt": "RVhBTVBMRQ==",
+        "certsKey": "RVhBTVBMRQ=="
+      },
+      "dev-gen1-ds.delta.sbrf.ru": {
+        "caCert": "RVhBTVBMRQ==",
+        "certsCrt": "RVhBTVBMRQ==",
+        "certsKey": "RVhBTVBMRQ=="
+      },
+      "dev-gen2.delta.sbrf.ru": {
+        "caCert": "RVhBTVBMRQ==",
+        "certsCrt": "RVhBTVBMRQ==",
+        "certsKey": "RVhBTVBMRQ=="
+      },
+      "dev-gen2.sigma.sbrf.ru": {
+        "caCert": "RVhBTVBMRQ==",
+        "certsCrt": "RVhBTVBMRQ==",
+        "certsKey": "RVhBTVBMRQ=="
+      }
+    },
+    "images": {
+      "2.0.6-2": "example.registry/openshift-service-mesh/proxyv2-rhel8:2.0.6-2",
+      "istio-release-1.6.14-se-release-1.2.2(sbt)": "example.registry/proxyv2:v1",
+      "istio-SE-1.12": "example.registry/polm/proxyv2:1.12",
+      "istio-SE-1.17": "example.registry/polm/proxyv2:1.17"
+    }
+  },
+  "jwt": {
+    "claim": "sub",
+    "claimHeader": "x-token-sub",
+    "jwtHeader": "x-token"
+  },
+  "mq_adapter": {
+    "fluentBitImage": "example.registry/fluent-bit:v1",
+    "images": {
+      "0.2.6.55": "example.registry/mq-gateway:v1"
+    }
+  },
+  "openshiftRouteParams": {
+    "balance": "random",
+    "disableCookies": false,
+    "shard": "apps",
+    "timeoutMs": 60000
+  },
+  "ott": {
+    "defaults": {
+      "certstore": {
+        "Synapse-LT-Module-1": {
+          "content": "RVhBTVBMRQ==",
+          "privateKeyPwd": "RVhBTVBMRQ==",
+          "pwd": "RVhBTVBMRQ=="
+        },
+        "Synapse-LT-Module-2": {
+          "content": "RVhBTVBMRQ==",
+          "privateKeyPwd": "RVhBTVBMRQ==",
+          "pwd": "RVhBTVBMRQ=="
+        }
+      },
+      "serviceHosts": "0.0.0.1:1000,0.0.0.2:2000,0.0.0.3:3000,0.0.0.4:4000",
+      "serviceUrl": "http://0.0.0.1:1000/ott-service/rest/token",
+      "truststore": {
+        "content": "RVhBTVBMRQ==",
+        "pwd": "RVhBTVBMRQ=="
+      }
+    },
+    "image": "example.registry/ott-client-api:v1"
+  },
+  "proxy": {
+    "proxyImage": "example.registry/proxy-adapter:v1"
+  },
+  "requestValidator": {
+    "extraLabels": {
+      "from": "lowcode",
+    },
+    "image": "example.registry/reqv:0.0.0.1"
+  },
+  "testapp": {
+    "image": "example.registry/test-app:v1"
+  },
+  "unimapper": {
+    "unimapperImage": "to_do"
+  }
+}

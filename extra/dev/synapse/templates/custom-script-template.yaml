@@ -1,0 +1,101 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: CustomScriptApp
+  namespace: default
+  title: CustomScript App
+  description: Динамический компонент выполнения кастомного кода в runtime, позволяющий расширять функциональность интеграционных решений.
+  docs: http://localhost:3000/docs/default/Component/federation-mcs-discovery
+  tags:
+    - recommended
+    - lowcode-module
+  annotations:
+    basedOn: base-common-parameters,base-stand-dependent-definitions,base-helm,base-publish-to-storage
+    base-helm/chart-directory: ./dest/templates/charts/custom-script
+    base-helm/render-output-directory: ./dest/templates/configs
+    dep-helm/chart-directory: ./dest/templates/charts/deployment
+    base-publish-to-storage/source-path: ./dest/templates
+
+spec:
+  owner: team-federation
+  type: service
+  parameters:
+    - title: Заполнение параметров шаблона
+      properties:
+        CHART_VALUES:
+          title: ''
+          type: object
+          properties:
+            customscriptApp:
+              title: Code
+              type: object
+              required:
+                - code
+                - language
+              properties:
+                language:
+                  title: 'Среда выполнения'
+                  type: 'string'
+                  enum: [ 'js-runtime' ]
+                externalport:
+                  title: Открытый порт
+                  type: integer
+                  minimum: 1024
+                  minLength: 1
+                  description: 'По умолчанию 8080'
+                code:
+                  title: Исходный код приложения
+                  type: string
+                  minLength: 1
+                  description: ''
+                  ui:widget: textarea
+                  ui:options:
+                    rows: 20
+
+  steps:
+    - id: fetch-charts
+      name: Загрузка Helm-чартов
+      action: fetch:plain
+      input:
+        url: ./helm-charts
+        targetPath: ./helm-charts
+
+    - id: copy-deps
+      name: Копирование нужных чартов
+      action: fs:rename
+      input:
+        files:
+          - from: ./helm-charts/custom-script
+            to: ${{ annotations['base-helm/chart-directory'] }}
+
+    - id: fetch-stand-dep-const
+      name: Загрузка общих стендозависимых параметров
+      action: fetch:plain
+      input:
+        url: ./base/stand-dependent-const
+        targetPath: ./tmp/stand-dependent-const
+
+    - id: parse-stand-dep-const
+      name: Разбор общих стендозависимых параметров
+      action: get:value:yaml
+      input:
+        sourcePath: ./tmp/stand-dependent-const/common.yaml
+        jsonPath: '$'
+
+    - id: fetch-values
+      name: Подготовка values для чарта
+      action: fetch:template
+      input:
+        url: ./base/helm-chart-values/custom-script
+        targetPath: ${{ annotations['base-helm/chart-directory'] }}
+        cookiecutterCompat: true
+        values:
+          CHART_VALUES: ${{ parameters.CHART_VALUES }}
+          CONST: ${{ steps["parse-stand-dep-const"].output.value }}
+
+    - id: cleanup-chart-dir
+      name: Очистка вспомогательных файлов
+      action: fs:delete
+      input:
+        files:
+          - ${{ annotations['base-helm/chart-directory'] }}/lib

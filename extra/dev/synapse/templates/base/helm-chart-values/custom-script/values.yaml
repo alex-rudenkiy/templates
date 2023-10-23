@@ -1,0 +1,27 @@
+{%- set const = cookiecutter.CONST -%}
+
+{%- set containerOrchestrationSystem =
+      cookiecutter.CHART_VALUES.containerOrchestrationSystem | default('openshift') -%}
+{%- set customscriptParams = cookiecutter.CHART_VALUES.customscriptApp -%}
+
+builder:
+  image:
+    registry: {{ const.customScriptImages.builder.registry }}
+    name: {{ const.customScriptImages.builder.name }}
+    tag: {{ const.customScriptImages.builder.tag }}
+  runtimeImage:
+    registry: {{ const.customScriptImages.runtimeImage.registry }}
+    name: {{ const.customScriptImages.runtimeImage.name }}
+    tag: {{ const.customScriptImages.runtimeImage.tag }}
+
+runner:
+  image:
+    registry: {{ const.customScriptImages.runner.registry }}
+    name: {{ const.customScriptImages.runner.name }}
+    tag: {{ const.customScriptImages.runner.tag }}
+
+app:
+  language: {{ customscriptParams.language }}
+  code: |
+    {{ customscriptParams.code | toYaml | indent(2) }}
+  externalport: {{ customscriptParams.externalport }}

@@ -1,0 +1,153 @@
+{{- $uuid := uuidv4 | b64enc | replace "+" "_" | trunc 16 | trimSuffix "-" }}
+{{- $onbuildCustomscriptImage := printf "%s/%s:%s-%s" .Values.runner.image.registry .Values.runner.image.name .Values.runner.image.tag $uuid }}
+
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: {{ .Release.Name }}-builder
+  labels:
+    job-name: {{ .Release.Name }}-builder
+spec:
+  template:
+    metadata:
+      labels:
+        job-name: {{ .Release.Name }}-builder
+      annotations:
+        sidecar.istio.io/inject: 'false'
+    spec:
+      volumes:
+        - name: cache
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: build
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: run
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: dockerfile-vol
+          configMap:
+            name: {{ .Release.Name }}-builder-config
+            items:
+              - key: Dockerfile
+                path: Dockerfile
+            defaultMode: 420
+        - name: sample-vol
+          configMap:
+            name: {{ .Release.Name }}-builder-config
+            items:
+              - key: sample.txt
+                path: sample.txt
+            defaultMode: 420
+        - name: indextoml-vol
+          configMap:
+            name: {{ .Release.Name }}-builder-config
+            items:
+              - key: index.toml
+                path: index.toml
+            defaultMode: 420
+        - name: dockerconfig
+          secret:
+            secretName: example-container-build-auth
+            items:
+              - key: .dockerconfigjson
+                path: docker-auth
+      containers:
+        - resources:
+            limits:
+              cpu: 200m
+              memory: 300Mi
+            requests:
+              cpu: 200m
+              memory: 300Mi
+          name: buildah-job-builder
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          command:
+            - /usr/bin/bash
+            - '-cx'
+          env:
+            - name: STORAGE_DRIVER
+              value: vfs
+            - name: BUILDAH_FORMAT
+              value: docker
+            - name: BUILDAH_ISOLATION
+              value: chroot
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/lib/containers
+            - name: build
+              mountPath: /build
+            - name: run
+              mountPath: /run/containers
+            - name: dockerfile-vol
+              mountPath: /build/Dockerfile
+              subPath: Dockerfile
+            - name: sample-vol
+              mountPath: /home/build/server.txt
+              subPath: sample.txt
+            - name: indextoml-vol
+              mountPath: /home/build/index.toml
+              subPath: index.toml
+            - name: dockerconfig
+              mountPath: /home/build/.dockercfg
+              subPath: docker-auth
+              readOnly: true
+          image: "{{ .Values.builder.image.registry }}/{{ .Values.builder.image.name }}:{{ .Values.builder.image.tag }}"
+          args:
+            - |
+                export REGISTRY_AUTH_FILE=/home/build/.dockercfg &&
+                buildah bud --debug --group-add keep-groups --isolation=chroot --force-rm --format=oci --no-cache -f /build/Dockerfile -t {{ $onbuildCustomscriptImage }} &&
+                buildah push  {{ $onbuildCustomscriptImage }}
+      restartPolicy: OnFailure
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-runner
+  labels:
+    app: {{ .Release.Name }}-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-runner
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-runner
+        sidecar.istio.io/inject: 'false'
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        resources:
+          limits:
+            cpu: 200m
+            memory: 300Mi
+          requests:
+            cpu: 200m
+            memory: 300Mi
+        image: {{ $onbuildCustomscriptImage }}
+        restartPolicy: Always
+        ports:
+          - containerPort: {{ .Values.app.externalport }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-runner-svc
+spec:
+  selector:
+    app: {{ .Release.Name }}-customscript
+  ports:
+    - protocol: TCP
+      port: {{ .Values.app.externalport }}
+      targetPort: {{ .Values.app.externalport }}

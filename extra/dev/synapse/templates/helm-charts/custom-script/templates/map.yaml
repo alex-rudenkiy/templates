@@ -1,0 +1,25 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-builder-config
+
+data:
+  Dockerfile: |
+    {{- if eq .Values.app.language "js-runtime" }}
+    FROM "{{ .Values.builder.runtimeImage.registry }}/{{ .Values.builder.runtimeImage.name }}:{{ .Values.builder.runtimeImage.tag }}"
+    COPY ./server.txt /app/index.js
+    COPY ./index.toml /app/index.toml
+    {{- end }}
+
+  index.toml: |
+    name = "fetch"
+    version = "1"
+
+    [features]
+    [features.http_requests]
+    allowed_methods = ["GET", "POST"]
+    allowed_hosts = ["*"]
+    allow_http = true
+
+  sample.txt: |
+  {{ .Values.app.code | trim | nindent 4 }}
